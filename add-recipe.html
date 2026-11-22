@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Recipe</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+
+  <style>
+    :root {
+  --bg: #f4f1f6;
+  --text: #2f2f38;
+  --muted: rgba(55, 55, 65, 0.62);
+
+  --glass: rgba(255, 255, 255, 0.46);
+  --glass-strong: rgba(255, 255, 255, 0.64);
+  --glass-soft: rgba(255, 255, 255, 0.28);
+
+  --stroke: rgba(255, 255, 255, 0.72);
+  --shadow: 0 18px 45px rgba(80, 70, 100, 0.16);
+  --inner-glow: inset 0 1px 0 rgba(255,255,255,0.85);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Tahoma, sans-serif;
+  color: var(--text);
+  padding: 22px;
+
+  background:
+    radial-gradient(circle at top left, rgba(255,255,255,0.95), transparent 34%),
+    radial-gradient(circle at 85% 12%, rgba(222, 218, 255, 0.78), transparent 32%),
+    radial-gradient(circle at 20% 90%, rgba(255, 214, 238, 0.68), transparent 34%),
+    linear-gradient(135deg, #f7f3fb, #ebe7f2);
+  background-attachment: fixed;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(120deg, rgba(255,255,255,0.32), transparent 38%),
+    radial-gradient(circle at 50% 0%, rgba(255,255,255,0.45), transparent 45%);
+  z-index: -1;
+}
+
+.header {
+  position: sticky;
+  top: 12px;
+  z-index: 20;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-bottom: 20px;
+  padding: 10px;
+  border-radius: 28px;
+
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.38), rgba(255,255,255,0.14));
+  border: 1px solid rgba(255,255,255,0.52);
+
+  backdrop-filter: blur(22px) saturate(1.45);
+  -webkit-backdrop-filter: blur(22px) saturate(1.45);
+
+  box-shadow:
+    0 16px 40px rgba(80, 70, 100, 0.1),
+    inset 0 1px 0 rgba(255,255,255,0.7);
+}
+
+.back-btn,
+.save-btn,
+.format-btn {
+  border: 1px solid var(--stroke);
+  border-radius: 999px;
+  padding: 10px 16px;
+
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.78), rgba(255,255,255,0.32));
+
+  box-shadow:
+    var(--shadow),
+    var(--inner-glow);
+
+  backdrop-filter: blur(22px) saturate(1.5);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--text);
+
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    background 0.22s ease;
+}
+
+.back-btn:hover,
+.save-btn:hover,
+.format-btn:hover {
+  transform: translateY(-1px) scale(1.015);
+  box-shadow:
+    0 22px 55px rgba(80, 70, 100, 0.2),
+    var(--inner-glow);
+}
+
+.back-btn:active,
+.save-btn:active,
+.format-btn:active {
+  transform: scale(0.97);
+}
+
+.save-btn {
+  background:
+    linear-gradient(145deg, rgba(255, 247, 196, 0.82), rgba(255,255,255,0.34));
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  letter-spacing: -0.03em;
+  color: rgba(42, 42, 52, 0.94);
+}
+
+label {
+  display: block;
+  margin: 18px 0 8px;
+  font-weight: bold;
+  color: rgba(42, 42, 52, 0.82);
+}
+
+input,
+textarea {
+  width: 100%;
+  border: 1px solid var(--stroke);
+  border-radius: 24px;
+  padding: 14px 16px;
+
+  font-size: 1rem;
+  font-family: Tahoma, sans-serif;
+  color: var(--text);
+  outline: none;
+
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.72), rgba(255,255,255,0.28));
+
+  box-shadow:
+    0 14px 35px rgba(80, 70, 100, 0.12),
+    var(--inner-glow);
+
+  backdrop-filter: blur(22px) saturate(1.45);
+  -webkit-backdrop-filter: blur(22px) saturate(1.45);
+
+  transition:
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    background 0.22s ease;
+}
+
+input:focus,
+textarea:focus {
+  border-color: rgba(255,255,255,0.92);
+  box-shadow:
+    0 18px 45px rgba(80, 70, 100, 0.16),
+    0 0 0 4px rgba(255,255,255,0.22),
+    var(--inner-glow);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(55, 55, 65, 0.42);
+}
+
+input[type="file"] {
+  padding: 12px;
+  cursor: pointer;
+}
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+#rawRecipe {
+  min-height: 220px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+
+  padding: 12px;
+  border-radius: 28px;
+
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.34), rgba(255,255,255,0.12));
+  border: 1px solid rgba(255,255,255,0.46);
+
+  backdrop-filter: blur(18px) saturate(1.35);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+
+  box-shadow:
+    0 12px 30px rgba(80, 70, 100, 0.08),
+    inset 0 1px 0 rgba(255,255,255,0.65);
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-top: 8px;
+
+  padding: 12px 14px;
+  border-radius: 22px;
+
+  background:
+    linear-gradient(145deg, rgba(255,255,255,0.46), rgba(255,255,255,0.18));
+  border: 1px solid rgba(255,255,255,0.54);
+
+  backdrop-filter: blur(18px) saturate(1.35);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+
+  box-shadow:
+    0 10px 24px rgba(80, 70, 100, 0.08),
+    inset 0 1px 0 rgba(255,255,255,0.7);
+}
+
+#ocrStatus:empty {
+  display: none;
+}
+
+#ocrStatus:not(:empty) {
+  display: block;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 16px;
+  }
+
+  h1 {
+    font-size: 1.55rem;
+  }
+
+  .header {
+    align-items: flex-start;
+  }
+
+  .back-btn,
+  .save-btn,
+  .format-btn {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+
+  input,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <button class="back-btn" onclick="location.href='index.html'">← Back</button>
+    <h1>Add Recipe</h1>
+  </div>
+
+  <label>Paste full recipe</label>
+  <textarea id="rawRecipe" placeholder="Paste recipe here..."></textarea>
+
+<label>Or scan recipe photo</label>
+<input id="photoInput" type="file" accept="image/*" />
+
+<div class="actions">
+  <button class="format-btn" id="ocrBtn">Read Photo</button>
+</div>
+
+<div id="ocrStatus" class="hint"></div>
+
+  <div class="actions">
+	<button class="format-btn" id="cleanBtn">Clean Text</button>
+    <button class="format-btn" id="formatBtn">Auto-format</button>
+    <button class="save-btn" id="saveBtn">Save Recipe</button>
+  </div>
+
+  <div class="hint">
+    Tip: Works best if the recipe has headings like Ingredients, Instructions, Method, or Directions.
+  </div>
+
+  <label>Recipe title</label>
+  <input id="titleInput" placeholder="Recipe title" />
+
+  <label>Ingredients</label>
+  <textarea id="ingredientsInput" placeholder="One ingredient per line"></textarea>
+
+  <label>Instructions</label>
+  <textarea id="instructionsInput" placeholder="One step per line"></textarea>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAvoNBFAEWNDptC8JIJ2TeuczKuFFmbJVk",
+    authDomain: "expenses-a18fa.firebaseapp.com",
+    projectId: "expenses-a18fa",
+    storageBucket: "expenses-a18fa.appspot.com",
+    messagingSenderId: "710897249151",
+    appId: "1:710897249151:web:10a31240f099d8e328c84a",
+    measurementId: "G-Z0TNKB1L00"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const rawRecipe = document.getElementById("rawRecipe");
+  const titleInput = document.getElementById("titleInput");
+  const ingredientsInput = document.getElementById("ingredientsInput");
+  const instructionsInput = document.getElementById("instructionsInput");
+  const formatBtn = document.getElementById("formatBtn");
+  const saveBtn = document.getElementById("saveBtn");
+  const photoInput = document.getElementById("photoInput");
+  const ocrBtn = document.getElementById("ocrBtn");
+  const ocrStatus = document.getElementById("ocrStatus");
+  const cleanBtn = document.getElementById("cleanBtn");
+
+
+
+  function cleanLine(line) {
+  return line
+    .replace(/^[-•*]\s*/, "")
+    .replace(/^\d+[\).\s-]+/, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+function cleanOCRText(text) {
+  return text
+    .replace(/[|~^_=<>[\]{}]/g, " ")
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/[`´]/g, "'")
+    .replace(/[•·●]/g, "-")
+    .replace(/[^\S\r\n]{2,}/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function isHeading(line) {
+  return /^(ingredients?|instructions?|method|directions?|steps?|get prepared|cook the veggies|make the mash|cook the beef|make the sauce|serve up|enjoy)[\s:]*$/i.test(line);
+}
+
+function isInstructionLine(line) {
+  const l = line.trim().toLowerCase();
+
+  return (
+    /[.!?]$/.test(l) ||
+    /^(bring|peel|cut|trim|slice|finely|cook|place|add|cover|steam|transfer|season|drain|return|mash|heat|when|while|toss|stir|serve|divide|top|reduce|boil|simmer|combine|mix|pour|remove)/i.test(l) ||
+    /\b(until|then|about|minutes?|medium|high heat|low heat|fragrant|cooked through|keep warm|to the boil)\b/i.test(l)
+  );
+}
+
+function isIngredientLine(line) {
+  const l = line.trim().toLowerCase();
+
+  if (!l) return false;
+  if (isHeading(l)) return false;
+  if (isInstructionLine(l)) return false;
+
+  return (
+    /\b(cup|cups|tsp|tbsp|tbs|g|kg|ml|l|packet|sachet|bottle|clove|cloves|potato|potatoes|parsnip|carrot|beans|garlic|beef|cream|mustard|paste|butter|milk|salt|pepper|oil|seasoning|powder)\b/i.test(l) ||
+    /^[\d\/.\s]+[a-z]/i.test(l)
+  );
+}
+
+function smartCleanRecipeText(text) {
+  return cleanOCRText(text)
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(line => line.length > 1)
+    .filter(line => !/(allergens|hellofresh|foodinfo|received a substitute|product labels|nutrition|pantry items|grab your meal kit)/i.test(line))
+    .filter(line => !/^[^a-zA-Z0-9]+$/.test(line))
+    .map(line => cleanLine(line))
+    .filter(Boolean)
+    .join("\n");
+}
+
+function autoFormatRecipe(text) {
+  const lines = smartCleanRecipeText(text)
+    .split(/\r?\n/)
+    .map(l => l.trim())
+    .filter(Boolean);
+
+  let title = lines[0] || "Untitled Recipe";
+  let ingredients = [];
+  let instructions = [];
+  let mode = "";
+
+  const seenIngredients = new Set();
+  const seenInstructions = new Set();
+
+  for (let i = 1; i < lines.length; i++) {
+    let line = cleanLine(lines[i]);
+    let lower = line.toLowerCase();
+
+    if (!line) continue;
+
+    if (/^ingredients?:?$/i.test(line)) {
+      mode = "ingredients";
+      continue;
+    }
+
+    if (/^(instructions?|method|directions?|steps?):?$/i.test(line)) {
+      mode = "instructions";
+      continue;
+    }
+
+    if (/^(get prepared|cook the veggies|make the mash|cook the beef|make the sauce|serve up|enjoy)[\s:]*$/i.test(line)) {
+      mode = "instructions";
+      continue;
+    }
+
+    // Important fix:
+    // If an instruction-looking sentence appears while still in ingredients,
+    // move it to instructions instead of contaminating ingredients.
+    if (isInstructionLine(line)) {
+      mode = "instructions";
+
+      if (!seenInstructions.has(lower)) {
+        instructions.push(line);
+        seenInstructions.add(lower);
+      }
+
+      continue;
+    }
+
+    if (mode === "ingredients" || isIngredientLine(line)) {
+      if (!seenIngredients.has(lower)) {
+        ingredients.push(line);
+        seenIngredients.add(lower);
+      }
+      continue;
+    }
+
+    if (mode === "instructions") {
+      if (!seenInstructions.has(lower)) {
+        instructions.push(line);
+        seenInstructions.add(lower);
+      }
+    }
+  }
+
+  // Final safety clean: remove accidental instruction sentences from ingredients
+  ingredients = ingredients.filter(item => !isInstructionLine(item));
+
+  return { title, ingredients, instructions };
+}
+
+  function preprocessImage(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+
+      img.onload = () => {
+        const scale = 2;
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+          const grey = data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11;
+          const contrast = grey > 155 ? 255 : 0;
+
+          data[i] = contrast;
+          data[i + 1] = contrast;
+          data[i + 2] = contrast;
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+
+        canvas.toBlob(blob => {
+          if (blob) resolve(blob);
+          else reject(new Error("Image processing failed"));
+        }, "image/png");
+      };
+
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  cleanBtn.addEventListener("click", () => {
+  const text = rawRecipe.value.trim();
+
+  if (!text) {
+    alert("Nothing to clean yet.");
+    return;
+  }
+
+  rawRecipe.value = smartCleanRecipeText(text);
+});
+
+  formatBtn.addEventListener("click", () => {
+    const text = rawRecipe.value.trim();
+
+    if (!text) {
+      alert("Paste a recipe first.");
+      return;
+    }
+
+    const result = autoFormatRecipe(text);
+
+    titleInput.value = result.title || "";
+    ingredientsInput.value = result.ingredients.join("\n");
+    instructionsInput.value = result.instructions.join("\n");
+  });
+
+  ocrBtn.addEventListener("click", async () => {
+    const file = photoInput.files[0];
+
+    if (!file) {
+      alert("Choose or take a photo first.");
+      return;
+    }
+
+    ocrBtn.disabled = true;
+    ocrBtn.textContent = "Reading...";
+    ocrStatus.textContent = "Preparing image...";
+
+    try {
+      const processedImage = await preprocessImage(file);
+
+      const result = await Tesseract.recognize(processedImage, "eng", {
+        logger: m => {
+          if (m.status && m.progress) {
+            ocrStatus.textContent = `${m.status} ${Math.round(m.progress * 100)}%`;
+          }
+        }
+      });
+
+      const cleanedText = cleanOCRText(result.data.text);
+
+      rawRecipe.value = rawRecipe.value
+        ? rawRecipe.value + "\n\n" + cleanedText
+        : cleanedText;
+
+      ocrStatus.textContent = "Done. Check the text, then click Auto-format.";
+    } catch (error) {
+      console.error(error);
+      ocrStatus.textContent = "Could not read photo. Try a closer cropped photo.";
+    }
+
+    ocrBtn.textContent = "Read Photo";
+    ocrBtn.disabled = false;
+  });
+
+  saveBtn.addEventListener("click", async () => {
+
+  if (rawRecipe.value.trim() && (!titleInput.value.trim() || !ingredientsInput.value.trim() || !instructionsInput.value.trim())) {
+  const result = autoFormatRecipe(rawRecipe.value.trim());
+
+  if (!titleInput.value.trim()) {
+    titleInput.value = result.title || "";
+  }
+
+  if (!ingredientsInput.value.trim()) {
+    ingredientsInput.value = result.ingredients.join("\n");
+  }
+
+  if (!instructionsInput.value.trim()) {
+    instructionsInput.value = result.instructions.join("\n");
+  }
+}
+    const title = titleInput.value.trim();
+
+    let ingredients = ingredientsInput.value
+  .split(/\r?\n/)
+  .map(line => cleanLine(line))
+  .filter(Boolean)
+  .filter(line => !isInstructionLine(line));
+
+let instructions = instructionsInput.value
+  .split(/\r?\n/)
+  .map(line => cleanLine(line))
+  .filter(Boolean);
+
+const movedInstructions = ingredientsInput.value
+  .split(/\r?\n/)
+  .map(line => cleanLine(line))
+  .filter(Boolean)
+  .filter(line => isInstructionLine(line));
+
+instructions = [...movedInstructions, ...instructions];
+
+    if (!title) {
+      alert("Please add a recipe title.");
+      return;
+    }
+
+    if (ingredients.length === 0 && instructions.length === 0) {
+      alert("Please add ingredients or instructions.");
+      return;
+    }
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving...";
+
+    try {
+      await addDoc(collection(db, "recipes"), {
+        title,
+        ingredients,
+        instructions,
+        rawText: rawRecipe.value.trim(),
+        photoUrl: "",
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+
+      location.href = "index.html";
+    } catch (error) {
+      console.error(error);
+      alert("Could not save recipe. Check Firestore rules.");
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save Recipe";
+    }
+  });
+</script>
+</body>
+</html>
